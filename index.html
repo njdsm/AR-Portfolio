@@ -14,10 +14,10 @@
     import { ARButton } from 'https://unpkg.com/three@0.126.0/examples/jsm/webxr/ARButton.js';
 
 		let camera, scene, renderer;
-    let mesh;
+    let mesh, mesh2;
 
 		init();
-		animate();
+    animate();
 
 		function init() {
 			const container = document.createElement('div');
@@ -35,51 +35,39 @@
       renderer.setSize(window.innerWidth, window.innerHeight);
       renderer.xr.enabled = true;
       container.appendChild(renderer.domElement);
-			
 
-			// Everything hereafter is optional things we want to add to the scene
-
-			// Add a light to the cene
       // Documentation: https://threejs.org/docs/index.html#api/en/lights/HemisphereLight
-      // HemisphereLight( skyColor : Integer, groundColor : Integer, intensity : Float )
-      // skyColor - (optional) hexadecimal color of the sky. Default is 0xffffff.
-      // groundColor - (optional) hexadecimal color of the ground. Default is 0xffffff.
-      // intensity - (optional) numeric value of the light's strength/intensity. Default is 1.
-      const light = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
+      var light = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
       light.position.set(0.5, 1, 0.25);
       scene.add(light);
-      console.log(light);
 		
-
-      // Add a polyhedron shape to the scene
       // Documentation: https://threejs.org/docs/#api/en/geometries/IcosahedronGeometry
-      // IcosahedronGeometry(radius : Float, detail : Integer)
-      // radius — Default is 1.
-      // detail — Default is 0. Setting this to a value greater than 0 adds more vertices making it no longer an icosahedron. When detail is greater than 1, it's effectively a sphere.
       const geometry = new THREE.IcosahedronGeometry(0.1, 1);
       const material = new THREE.MeshPhongMaterial({
         color: new THREE.Color("rgb(226,35,213)"),
         shininess: 6,
         flatShading: true,
+        transparent: 1,
         opacity: 0.8
       })
-      const mesh = new THREE.Mesh(geometry, material);
-      scene.add(mesh);
-      mesh.position.set(0, 0, -0.5);
-      
-      // cube
-      const geometry2 = new THREE.BoxGeometry(0.3, 0.3, 0.3); //default size 1,1,1
-      const material2 = new THREE.MeshBasicMaterial({ color: 0xe06666 });
-      const cubeMesh = new THREE.Mesh(geometry2, material2);
-      scene.add(cubeMesh);
-      cubeMesh.position.z = -1;
-      cubeMesh.position.y = 0.5;
 
-      const button = ARButton.createButton(renderer);
-      document.body.appendChild(button);
+      mesh = new THREE.Mesh(geometry, material);
+      scene.add(mesh);
+      mesh.position.set(0.2, 0, -0.5);
+
+      // add a second shape, a torus
+      const geometry2 = new THREE.TorusGeometry( .15, .05, 12, 50 );
+      const material2 = new THREE.MeshBasicMaterial({ 
+        color: new THREE.Color("rgb(253,253,150)")
+       });
+
+      mesh2 = new THREE.Mesh(geometry2, material2)
+      mesh2.position.set(-0.2,0,-1);
+      scene.add(mesh2);
+
+      document.body.appendChild(ARButton.createButton(renderer));
 
       window.addEventListener('resize', onWindowResize, false);
-
     }
 
     function onWindowResize() {
@@ -89,19 +77,21 @@
       renderer.setSize(window.innerWidth, window.innerHeight);
     }
 
-
-		// this function is only called one time
-		// here we set the render function to be called in a loop
     function animate() {
       renderer.setAnimationLoop(render);
     }
 
-		// render function called on a loop every time the screen is refreshed
-		// which typically means 60 times a second (60 frames per second)
     function render() {
+      rotateObjects();
       renderer.render(scene, camera);
     }
-		
+
+    function rotateObjects() {
+      // rotation is in radian units
+      mesh.rotation.y -= 0.04;
+      mesh2.rotation.x += 0.04;
+    }
+
 	</script>
 </body>
 
