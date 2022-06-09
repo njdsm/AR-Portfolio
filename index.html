@@ -16,6 +16,7 @@
 
 		let camera, scene, renderer;
     let loader;
+    let model;
 
 		init();
     animate();
@@ -42,20 +43,18 @@
 
       // loader object - GLTF loader object
       loader = new THREE.GLTFLoader();
-      console.log(loader);
 
       // loader.load(model url, onLoad callback, onProgress callback, onError callback)
       loader.load(
         modelUrl,
         function (gltf) {
-          const model = gltf.scene;
-          console.log(model);
-          model.position.y = 5;
-          model.position.x = 10;
+          model = gltf.scene;
+          model.position.z = -10;
           scene.add(model);
+          console.log("Model added to scene");
         },
-        function (event) {
-          console.log(event);
+        function (xhr) {
+          console.log(xhr);
         },
         function (error) {
           console.log(error);
@@ -81,7 +80,18 @@
     }
 
     function render() {
+      rotateModel();
       renderer.render(scene, camera);
+    }
+
+    let degrees = 0
+
+    function rotateModel() {
+      if (model !== undefined){
+        // model.rotation.y -= 0.01;
+        degrees += 0.2;
+        model.rotation.y = THREE.Math.degToRad(degrees);
+      }
     }
 
 	</script>
