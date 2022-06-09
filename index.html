@@ -15,8 +15,8 @@
     import { ARButton } from 'https://unpkg.com/three@0.126.0/examples/jsm/webxr/ARButton.js';
 
 		let camera, scene, renderer;
-    let loader;
-    let model;
+    let controller;
+    let mesh;
 
 		init();
     animate();
@@ -39,33 +39,34 @@
       light.position.set(0.5, 1, 0.25);
       scene.add(light);
 
-      const modelUrl = 'https://raw.githubusercontent.com/immersive-web/webxr-samples/main/media/gltf/space/space.gltf';
-
-      // loader object - GLTF loader object
-      loader = new THREE.GLTFLoader();
-
-      // loader.load(model url, onLoad callback, onProgress callback, onError callback)
-      loader.load(
-        modelUrl,
-        function (gltf) {
-          model = gltf.scene;
-          model.position.z = -10;
-          scene.add(model);
-          console.log("Model added to scene");
-        },
-        function (xhr) {
-          console.log(xhr);
-        },
-        function (error) {
-          console.log(error);
-        }
-
-      );
-    
+      controller = renderer.xr.getController(0);
+      controller.addEventListener('select', onSelect)
+      console.log(controller);
+      scene.add(controller);
 
       document.body.appendChild(ARButton.createButton(renderer));
 
       window.addEventListener('resize', onWindowResize, false);
+    }
+
+    function onSelect() {
+      console.log("select");
+      const geometry = new THREE.ConeGeometry(0.1, 0.2, 32).rotateX(Math.PI / 2);
+      const materials = new THREE.MeshPhongMaterial({
+        color: 0xffffff * Math.random(),
+        shininess: 6,
+        flatShading: true,
+        transparent: 1,
+        opacity: 0.8
+      })
+
+      mesh = new THREE.Mesh(geometry, materials);
+
+      mesh.position.set(0, 0, -0.6).applyMatrix4(controller.matrixWorld);
+      mesh.quaternion.setFromRotationMatrix(controller.matrixWorld);
+
+      scene.add(mesh);
+
     }
 
     function onWindowResize() {
@@ -80,18 +81,7 @@
     }
 
     function render() {
-      rotateModel();
       renderer.render(scene, camera);
-    }
-
-    let degrees = 0
-
-    function rotateModel() {
-      if (model !== undefined){
-        // model.rotation.y -= 0.01;
-        degrees += 0.2;
-        model.rotation.y = THREE.Math.degToRad(degrees);
-      }
     }
 
 	</script>
