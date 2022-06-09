@@ -7,6 +7,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 	<link type="text/css" rel="stylesheet" href="style.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r126/three.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/three@0.126.0/examples/js/loaders/GLTFLoader.js"></script>
 </head>
 
 <body>
@@ -14,7 +15,7 @@
     import { ARButton } from 'https://unpkg.com/three@0.126.0/examples/jsm/webxr/ARButton.js';
 
 		let camera, scene, renderer;
-    let mesh, mesh2;
+    let loader;
 
 		init();
     animate();
@@ -23,47 +24,45 @@
 			const container = document.createElement('div');
 			document.body.appendChild(container);
 
-			// For more info read: https://threejs.org/docs/#manual/en/introduction/Creating-a-scene
 			scene = new THREE.Scene();
 
-      // From documentation: https://threejs.org/docs/#api/en/cameras/PerspectiveCamera
       camera = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.01, 40);
       
-      // Documentation: https://threejs.org/docs/#api/en/renderers/WebGLRenderer
       renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
       renderer.setPixelRatio(window.devicePixelRatio);
       renderer.setSize(window.innerWidth, window.innerHeight);
       renderer.xr.enabled = true;
       container.appendChild(renderer.domElement);
 
-      // Documentation: https://threejs.org/docs/index.html#api/en/lights/HemisphereLight
       var light = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
       light.position.set(0.5, 1, 0.25);
       scene.add(light);
-		
-      // Documentation: https://threejs.org/docs/#api/en/geometries/IcosahedronGeometry
-      const geometry = new THREE.IcosahedronGeometry(0.1, 1);
-      const material = new THREE.MeshPhongMaterial({
-        color: new THREE.Color("rgb(226,35,213)"),
-        shininess: 6,
-        flatShading: true,
-        transparent: 1,
-        opacity: 0.8
-      })
 
-      mesh = new THREE.Mesh(geometry, material);
-      scene.add(mesh);
-      mesh.position.set(0.2, 0, -0.5);
+      const modelUrl = 'https://raw.githubusercontent.com/immersive-web/webxr-samples/main/media/gltf/space/space.gltf';
 
-      // add a second shape, a torus
-      const geometry2 = new THREE.TorusGeometry( .15, .05, 12, 50 );
-      const material2 = new THREE.MeshBasicMaterial({ 
-        color: new THREE.Color("rgb(253,253,150)")
-       });
+      // loader object - GLTF loader object
+      loader = new THREE.GLTFLoader();
+      console.log(loader);
 
-      mesh2 = new THREE.Mesh(geometry2, material2)
-      mesh2.position.set(-0.2,0,-1);
-      scene.add(mesh2);
+      // loader.load(model url, onLoad callback, onProgress callback, onError callback)
+      loader.load(
+        modelUrl,
+        function (gltf) {
+          const model = gltf.scene;
+          console.log(model);
+          model.position.y = 5;
+          model.position.x = 10;
+          scene.add(model);
+        },
+        function (event) {
+          console.log(event);
+        },
+        function (error) {
+          console.log(error);
+        }
+
+      );
+    
 
       document.body.appendChild(ARButton.createButton(renderer));
 
@@ -82,14 +81,7 @@
     }
 
     function render() {
-      rotateObjects();
       renderer.render(scene, camera);
-    }
-
-    function rotateObjects() {
-      // rotation is in radian units
-      mesh.rotation.y -= 0.04;
-      mesh2.rotation.x += 0.04;
     }
 
 	</script>
